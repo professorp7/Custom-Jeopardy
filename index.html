@@ -233,7 +233,7 @@ body.theme-fnaf-red{
   --warn:#facc15;
 }
 
-/* FNaF Purple (Sister Location vibes) */
+/* FNaF Purple */
 body.theme-fnaf-purple{
   --bg:#050016;
   --panel:#0b021f;
@@ -248,7 +248,7 @@ body.theme-fnaf-purple{
   --warn:#facc15;
 }
 
-/* Arcade Green (neon) */
+/* Arcade Green */
 body.theme-arcade{
   --bg:#020713;
   --panel:#020617;
@@ -264,15 +264,9 @@ body.theme-arcade{
 }
 
 /* Board-wrap tweaks per theme */
-body.theme-fnaf-blue .board-wrap{
-  background-color:#041834;
-}
-body.theme-fnaf-red .board-wrap{
-  background-color:#2f070a;
-}
-body.theme-fnaf-purple .board-wrap{
-  background-color:#1b1038;
-}
+body.theme-fnaf-blue .board-wrap{background-color:#041834;}
+body.theme-fnaf-red .board-wrap{background-color:#2f070a;}
+body.theme-fnaf-purple .board-wrap{background-color:#1b1038;}
 body.theme-arcade .board-wrap{
   background:radial-gradient(circle at top,#16a34a 0,#020617 55%);
 }
@@ -350,7 +344,7 @@ body.theme-arcade .board-wrap{
     <section id="tab-editor" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <div class="row">
-          <input id="eTitle" class="input" style="min-width:240px" placeholder="Pack title (e.g., Movie Night)"/>
+          <input id="eTitle" class="input" style="min-width:240px" placeholder="Pack title (e.g., FNaF Night)"/>
           <label class="badge">Categories <input id="eCols" type="number" class="input" value="5" min="0" max="12" style="width:80px;margin-left:8px"></label>
           <label class="badge">Rows <input id="eRows" type="number" class="input" value="5" min="0" max="12" style="width:80px;margin-left:8px"></label>
           <button class="btn" id="btnBuildGrid">Build Grid</button>
@@ -440,7 +434,28 @@ body.theme-arcade .board-wrap{
           <div id="buzzResult" class="center" style="margin:10px 0;font-size:22px"></div>
         </div>
 
-        <div class="row center" style="justify-content:center;margin-top:10px">
+        <!-- Who is answering? -->
+        <div id="answerControls" class="center" style="margin-top:10px">
+          <div class="small" style="margin-bottom:4px">Who is answering this clue?</div>
+          <select id="answerPlayerSelect" class="input" style="min-width:180px;max-width:260px">
+            <option value="">(Use buzzer winner or pick player)</option>
+          </select>
+        </div>
+
+        <!-- Daily Double controls -->
+        <div id="ddControls" class="center hidden" style="margin-top:12px">
+          <div class="small" style="margin-bottom:4px">Daily Double: choose a player and set a wager</div>
+          <div class="row center" style="justify-content:center">
+            <select id="ddPlayerSelect" class="input" style="min-width:160px">
+              <option value="">Select player</option>
+            </select>
+            <input id="ddWagerInput" class="input" type="number" min="0" step="100" placeholder="Wager"/>
+            <button class="btn small warn" id="btnSetDDWager">Set Wager</button>
+          </div>
+          <div class="small" id="ddStatus" style="margin-top:4px;opacity:.8"></div>
+        </div>
+
+        <div class="row center" style="justify-content:center;margin-top:14px">
           <button class="btn good" id="btnCorrect">Correct (+)</button>
           <button class="btn bad" id="btnWrong">Wrong (–)</button>
           <button class="btn ghost" id="btnSkip">Skip</button>
@@ -511,6 +526,7 @@ let players=[]; // {id,name,score,key}
 let buzzOpen=false, buzzWinner=null, activeCell=null; // {c,r}
 let timerInt=null, timerLeft=0;
 let currentTheme='default';
+let ddState=null; // {playerId, wager}
 
 /**********************
  * Theme handling
@@ -620,11 +636,13 @@ function refreshPlayers(){
         if(d){
           p.score += parseInt(d,10);
           refreshPlayers();
+          populateAnswerControls();
           return;
         }
         if(act==='rm'){
           players = players.filter(x=>x.id!==p.id);
           refreshPlayers();
+          populateAnswerControls();
           return;
         }
         if(act==='buzz'){
@@ -637,6 +655,37 @@ function refreshPlayers(){
     });
     wrap.appendChild(card);
   });
+  populateAnswerControls();
+}
+
+/**********************
+ * Answer controls
+ **********************/
+function populateAnswerControls(){
+  const ansSel = $('#answerPlayerSelect');
+  const ddSel = $('#ddPlayerSelect');
+  if(ansSel){
+    const current = ansSel.value;
+    ansSel.innerHTML='<option value="">(Use buzzer winner or pick player)</option>';
+    players.forEach(p=>{
+      const opt=document.createElement('option');
+      opt.value=p.id;
+      opt.textContent=p.name;
+      ansSel.appendChild(opt);
+    });
+    if(current) ansSel.value=current;
+  }
+  if(ddSel){
+    const cur=ddSel.value;
+    ddSel.innerHTML='<option value="">Select player</option>';
+    players.forEach(p=>{
+      const opt=document.createElement('option');
+      opt.value=p.id;
+      opt.textContent=p.name;
+      ddSel.appendChild(opt);
+    });
+    if(cur) ddSel.value=cur;
+  }
 }
 
 /**********************
@@ -644,7 +693,7 @@ function refreshPlayers(){
  **********************/
 function openCard(c,r){
   activeCell={c,r};
-  buzzOpen=false; buzzWinner=null;
+  buzzOpen=false; buzzWinner=null; ddState=null;
   $('#buzzResult').textContent='';
   stopTimer();
   const item=currentPack.grid[c][r];
@@ -655,11 +704,21 @@ function openCard(c,r){
   $('#mAnswer').textContent=item.a||'(No answer set)';
   $('#answerWrap').classList.add('hidden');
   $('#buzzWrap').classList.add('hidden');
+  $('#ddStatus').textContent = '';
+  const ddControls=$('#ddControls');
+  if(item.dd){
+    ddControls.classList.remove('hidden');
+    $('#ddStatus').textContent='Choose a player and wager before scoring.';
+  }else{
+    ddControls.classList.add('hidden');
+  }
+  populateAnswerControls();
   $('#modalCard').classList.add('show');
 }
 function closeCard(){
   $('#modalCard').classList.remove('show');
   stopTimer();
+  ddState=null;
 }
 function reveal(){
   $('#answerWrap').classList.remove('hidden');
@@ -679,10 +738,41 @@ function showBuzzWinner(p){
 function applyResult(correct){
   if(!activeCell || !currentPack) return;
   const {c,r}=activeCell;
-  const val = currentPack.values?.[c]?.[r] ?? (r+1)*200;
-  if(buzzWinner){
-    buzzWinner.score += correct ? val : -val;
+  const item=currentPack.grid[c][r];
+
+  // Base value
+  let baseVal = currentPack.values?.[c]?.[r] ?? (r+1)*200;
+
+  // Which player?
+  let targetPlayer = null;
+
+  // Daily Double overrides value + player if wager set
+  if(item.dd && ddState && ddState.wager>0){
+    baseVal = ddState.wager;
+    targetPlayer = players.find(p=>p.id===ddState.playerId) || null;
   }
+
+  // If still no target, use buzz winner
+  if(!targetPlayer && buzzWinner){
+    targetPlayer = buzzWinner;
+  }
+
+  // If still no target, use manual selection
+  if(!targetPlayer){
+    const sel = $('#answerPlayerSelect');
+    const id = sel ? sel.value : '';
+    if(id){
+      targetPlayer = players.find(p=>p.id===id) || null;
+    }
+  }
+
+  if(!targetPlayer){
+    toast('No player selected/buzzed. Pick a player or use buzzers first.');
+    return;
+  }
+
+  targetPlayer.score += correct ? baseVal : -baseVal;
+
   currentPack.grid[c][r].used=true;
   closeCard();
   buildBoard();
@@ -734,7 +824,7 @@ function stopTimer(){
 }
 
 /**********************
- * Final Jeopardy (simple flow)
+ * Final Jeopardy
  **********************/
 function finalJeopardy(){
   if(!currentPack?.final){
@@ -1048,6 +1138,32 @@ $('#btnClearPlayers').addEventListener('click',()=>{
   }
 });
 
+// Set DD wager
+$('#btnSetDDWager').addEventListener('click',()=>{
+  if(!currentPack || !activeCell){
+    toast('No clue open.');
+    return;
+  }
+  const {c,r}=activeCell;
+  const item=currentPack.grid[c][r];
+  if(!item.dd){
+    toast('This is not a Daily Double clue.');
+    return;
+  }
+  const sel=$('#ddPlayerSelect');
+  const id=sel.value;
+  const p=players.find(x=>x.id===id);
+  const inp=$('#ddWagerInput');
+  const w=parseInt(inp.value,10);
+  if(!p || !w || w<=0){
+    toast('Choose a player and enter a positive wager.');
+    return;
+  }
+  ddState={playerId:p.id,wager:w};
+  $('#ddStatus').textContent=`${p.name} is wagering $${w}.`;
+  $('#mValue').textContent='$'+w;
+});
+
 // Keyboard buzz + shortcuts
 window.addEventListener('keydown',e=>{
   const keyRaw = e.key;
@@ -1188,7 +1304,49 @@ function makeEmpty(cols=5, rows=5, title='Untitled Pack'){
 }
 
 function seedSamples(){
-  // Sample 1
+  // FNaF pack (default)
+  const fnaf = makeEmpty(5,5,'FNaF Night');
+  fnaf.categories = ['Animatronics','Locations','Timeline','Mini-Games','Misc'];
+
+  // Sample questions (not super deep lore, just fun)
+  fnaf.grid[0][0]={q:'The bear animatronic who hosts the original pizzeria.', a:'Freddy Fazbear', used:false, dd:false};
+  fnaf.grid[0][1]={q:'The yellow rabbit suit used by William Afton.', a:'Spring Bonnie / Springtrap', used:false, dd:false};
+  fnaf.grid[0][2]={q:'The fox pirate animatronic found in Pirate Cove.', a:'Foxy', used:false, dd:false};
+  fnaf.grid[0][3]={q:'This animatronic sings and plays guitar on stage with Freddy.', a:'Bonnie the Bunny', used:false, dd:false};
+  fnaf.grid[0][4]={q:'The cupcake often seen with Chica.', a:'Mr. Cupcake', used:false, dd:false};
+
+  fnaf.grid[1][0]={q:'The main restaurant in the first game.', a:'Freddy Fazbear’s Pizza', used:false, dd:false};
+  fnaf.grid[1][1]={q:'The mall-like location in Security Breach.', a:'The Mega Pizzaplex', used:false, dd:false};
+  fnaf.grid[1][2]={q:'The horror attraction in FNaF 3.', a:'Fazbear’s Fright', used:false, dd:false};
+  fnaf.grid[1][3]={q:'The place where you watch animatronics from cameras in FNaF 1.', a:'The Security Office', used:false, dd:false};
+  fnaf.grid[1][4]={q:'The sister facility with circus-style animatronics.', a:'Circus Baby’s Entertainment and Rental', used:false, dd:false};
+
+  fnaf.grid[2][0]={q:'The creator of the FNaF game series.', a:'Scott Cawthon', used:false, dd:false};
+  fnaf.grid[2][1]={q:'The purple-colored man tied to many of the murders.', a:'William Afton', used:false, dd:false};
+  fnaf.grid[2][2]={q:'The company that owns most FNaF locations.', a:'Fazbear Entertainment', used:false, dd:false};
+  fnaf.grid[2][3]={q:'The event where multiple kids were lured away and killed, often abbreviated MCI.', a:'The Missing Children Incident', used:false, dd:false};
+  fnaf.grid[2][4]={q:'The name of William Afton’s son who becomes the crying child / victim in some theories.', a:'Commonly called the Crying Child (name debated)', used:false, dd:false};
+
+  fnaf.grid[3][0]={q:'The 8-bit minigames style first seen on Atari-like screens.', a:'Retro/Atari-style minigames', used:false, dd:false};
+  fnaf.grid[3][1]={q:'The minigame where you give cake to children as Freddy.', a:'Give Cake to the Children', used:false, dd:false};
+  fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'FNaF 2 “Save Them” style minigame (often called “Take Cake” / variants)', used:false, dd:false};
+  fnaf.grid[3][3]={q:'The minigame that reveals the spirits inside the toys, with balloons and gifts.', a:'Happiest Day', used:false, dd:false};
+  fnaf.grid[3][4]={q:'The minigame where you control a crying child in a house with a creepy Fredbear plush.', a:'FNaF 4 bedroom minigames', used:false, dd:false};
+
+  fnaf.grid[4][0]={q:'The animatronic that crawls through vents in Sister Location.', a:'Funtime Foxy / Ennard (depending on section)', used:false, dd:false};
+  fnaf.grid[4][1]={q:'The in-universe horror game based on the pizzeria, seen in Help Wanted.', a:'Fazbear’s Virtual Experience', used:false, dd:false};
+  fnaf.grid[4][2]={q:'The giant sun/moon daycare animatronic.', a:'Sun / Moon (Sundrop & Moondrop)', used:false, dd:false};
+  fnaf.grid[4][3]={q:'The glam-rock version of Freddy who helps the player.', a:'Glamrock Freddy', used:false, dd:false};
+  fnaf.grid[4][4]={q:'The animatronic band’s guitarist in Security Breach.', a:'Montgomery Gator (Monty)', used:false, dd:false};
+
+  fnaf.grid[1][3].dd=true;
+  fnaf.grid[3][4].dd=true;
+  fnaf.final = {
+    q:'This in-universe company is responsible for most of the animatronics and locations across the series.',
+    a:'Fazbear Entertainment'
+  };
+
+  // General trivia pack as a second example
   const p1=makeEmpty(5,5,'General Trivia');
   p1.categories=['History','Science','Movies','Games','Random'];
   const samples=[
@@ -1200,31 +1358,26 @@ function seedSamples(){
   ];
   for(let r=0;r<5;r++){
     for(let c=0;c<5;c++){
-      p1.grid[c][r]={q:samples[c%5][0], a:samples[c%5][1], used:false,dd:false};
+      p1.grid[c][r]={q:samples[c%5][0], a:samples[c%5][1], used:false, dd:false};
     }
   }
   p1.grid[1][3].dd=true;
   p1.grid[3][4].dd=true;
-  p1.final={q:'This planet is known as the Red Planet.', a:'What is Mars?'};
+  p1.final={q:'This planet is known as the Red Planet.', a:'Mars'};
 
-  // Sample 2 shorter
-  const p2=makeEmpty(4,4,'Movie Night');
-  p2.categories=['Pixar','Marvel','Star Wars','Quotes'];
-  p2.final={q:'Famous line finishing: "May the ___ be with you."', a:'Force'};
-
+  store.put(fnaf);
   store.put(p1);
-  store.put(p2);
 }
 
 (function init(){
   // Theme
-  const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'fnaf-blue';
   applyTheme(savedTheme);
 
   if(store.packs.length===0) seedSamples();
   refreshPackTable();
   refreshPackSelect();
-  // Default load first pack
+  // Default load first pack (should be FNaF Night on fresh storage)
   if(store.packs[0]){
     currentPack=JSON.parse(JSON.stringify(store.packs[0]));
     buildBoard();
