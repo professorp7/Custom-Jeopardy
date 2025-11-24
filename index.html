@@ -278,7 +278,8 @@ body.theme-arcade .board-wrap{
 }
 </style>
 </head>
-<body class="theme-default">
+<!-- Start already in FNaF Blue theme -->
+<body class="theme-fnaf-blue">
   <div class="container">
     <div class="h-row">
       <h1 style="margin:6px 0">Jeopardy Party</h1>
@@ -1272,31 +1273,35 @@ function seedSamples(){
   const fnaf = makeEmpty(5,5,'FNaF Night');
   fnaf.categories = ['Animatronics','Locations','Timeline','Mini-Games','Misc'];
 
-  // Sample questions (simple, fun)
+  // Animatronics
   fnaf.grid[0][0]={q:'The bear animatronic who hosts the original pizzeria.', a:'Freddy Fazbear', used:false, dd:false};
   fnaf.grid[0][1]={q:'The yellow rabbit suit used by William Afton.', a:'Spring Bonnie / Springtrap', used:false, dd:false};
   fnaf.grid[0][2]={q:'The fox pirate animatronic found in Pirate Cove.', a:'Foxy', used:false, dd:false};
   fnaf.grid[0][3]={q:'This animatronic sings and plays guitar on stage with Freddy.', a:'Bonnie the Bunny', used:false, dd:false};
   fnaf.grid[0][4]={q:'The cupcake often seen with Chica.', a:'Mr. Cupcake', used:false, dd:false};
 
+  // Locations
   fnaf.grid[1][0]={q:'The main restaurant in the first game.', a:'Freddy Fazbear’s Pizza', used:false, dd:false};
   fnaf.grid[1][1]={q:'The mall-like location in Security Breach.', a:'The Mega Pizzaplex', used:false, dd:false};
   fnaf.grid[1][2]={q:'The horror attraction in FNaF 3.', a:'Fazbear’s Fright', used:false, dd:false};
   fnaf.grid[1][3]={q:'The place where you watch animatronics from cameras in FNaF 1.', a:'The Security Office', used:false, dd:true};
   fnaf.grid[1][4]={q:'The sister facility with circus-style animatronics.', a:'Circus Baby’s Entertainment and Rental', used:false, dd:false};
 
+  // Timeline / lore
   fnaf.grid[2][0]={q:'The creator of the FNaF game series.', a:'Scott Cawthon', used:false, dd:false};
   fnaf.grid[2][1]={q:'The purple-colored man tied to many of the murders.', a:'William Afton', used:false, dd:false};
   fnaf.grid[2][2]={q:'The company that owns most FNaF locations.', a:'Fazbear Entertainment', used:false, dd:false};
   fnaf.grid[2][3]={q:'The event where multiple kids were lured away and killed, often abbreviated MCI.', a:'The Missing Children Incident', used:false, dd:false};
   fnaf.grid[2][4]={q:'The name of William Afton’s son who becomes the crying child in some theories.', a:'Often called the Crying Child (name debated)', used:false, dd:false};
 
+  // Minigames
   fnaf.grid[3][0]={q:'The 8-bit style minigames first seen on Atari-like screens.', a:'Retro/Atari-style minigames', used:false, dd:false};
   fnaf.grid[3][1]={q:'The minigame where you give cake to children as Freddy.', a:'Give Cake to the Children', used:false, dd:false};
   fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'“Save Them” car minigame', used:false, dd:false};
   fnaf.grid[3][3]={q:'The minigame that shows spirits being put to rest with masks and a party.', a:'Happiest Day', used:false, dd:false};
   fnaf.grid[3][4]={q:'The minigame where you control a crying child in a house with a creepy Fredbear plush.', a:'FNaF 4 bedroom minigames', used:false, dd:true};
 
+  // Misc
   fnaf.grid[4][0]={q:'The animatronic that crawls through vents in Sister Location.', a:'Funtime Foxy / Ennard (depending on section)', used:false, dd:false};
   fnaf.grid[4][1]={q:'The in-universe horror game based on the pizzeria, seen in Help Wanted.', a:'Fazbear’s Virtual Experience', used:false, dd:false};
   fnaf.grid[4][2]={q:'The giant sun/moon daycare animatronic.', a:'Sun / Moon (Sundrop & Moondrop)', used:false, dd:false};
@@ -1313,32 +1318,8 @@ function seedSamples(){
   store.put(fnaf);
 }
 
-
-  // Optional second sample: general trivia
-  const p1=makeEmpty(5,5,'General Trivia');
-  p1.categories=['History','Science','Movies','Games','Random'];
-  const samples=[
-    ['Who was the first US president?','George Washington'],
-    ['H2O is commonly known as?','Water'],
-    ['Director of "Jurassic Park" (1993)?','Steven Spielberg'],
-    ['Creator of Minecraft?','Markus "Notch" Persson'],
-    ['Primary color not in RGB?','Yellow']
-  ];
-  for(let r=0;r<5;r++){
-    for(let c=0;c<5;c++){
-      p1.grid[c][r]={q:samples[c%5][0], a:samples[c%5][1], used:false, dd:false};
-    }
-  }
-  p1.grid[1][3].dd=true;
-  p1.grid[3][4].dd=true;
-  p1.final={q:'This planet is known as the Red Planet.', a:'Mars', value:FINAL_VALUE};
-
-  store.put(fnaf);
-  store.put(p1);
-}
-
 (function init(){
-  // Theme
+  // Theme: default to FNaF Blue on first load
   const savedTheme = localStorage.getItem(THEME_KEY) || 'fnaf-blue';
   applyTheme(savedTheme);
 
