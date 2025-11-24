@@ -1293,7 +1293,7 @@ function seedSamples(){
 
   fnaf.grid[3][0]={q:'The 8-bit style minigames first seen on Atari-like screens.', a:'Retro/Atari-style minigames', used:false, dd:false};
   fnaf.grid[3][1]={q:'The minigame where you give cake to children as Freddy.', a:'Give Cake to the Children', used:false, dd:false};
-  fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'FNaF 2-style “Save Them” car minigame', used:false, dd:false};
+  fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'“Save Them” car minigame', used:false, dd:false};
   fnaf.grid[3][3]={q:'The minigame that shows spirits being put to rest with masks and a party.', a:'Happiest Day', used:false, dd:false};
   fnaf.grid[3][4]={q:'The minigame where you control a crying child in a house with a creepy Fredbear plush.', a:'FNaF 4 bedroom minigames', used:false, dd:true};
 
@@ -1308,6 +1308,11 @@ function seedSamples(){
     a:'Fazbear Entertainment',
     value: FINAL_VALUE
   };
+
+  // Save ONLY the FNaF pack as the default
+  store.put(fnaf);
+}
+
 
   // Optional second sample: general trivia
   const p1=makeEmpty(5,5,'General Trivia');
