@@ -6,54 +6,276 @@
 <title>Jeopardy Party — Play + Pack Editor</title>
 <style>
 :root{
-  --bg:#0e1021;--panel:#151836;--muted:#9fb0c7;--text:#eaf1fb;--accent:#6ec3ff;--accent2:#a7f3d0;
-  --line:#273056;--tile:#0f1530;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
+  /* Base/default theme values; overridden by body.theme-* classes */
+  --bg:#0e1021;
+  --panel:#151836;
+  --muted:#9fb0c7;
+  --text:#eaf1fb;
+  --accent:#6ec3ff;
+  --accent2:#a7f3d0;
+  --line:#273056;
+  --tile:#0f1530;
+  --good:#22c55e;
+  --bad:#ef4444;
+  --warn:#f59e0b;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+body{
+  margin:0;
+  font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .25s ease,color .25s ease;
+}
 .container{max-width:1200px;margin:0 auto;padding:16px}
 .h-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.btn{background:linear-gradient(180deg,#28315f,#1a2046);border:1px solid #39407a;color:#eaf1fb;padding:10px 14px;border-radius:12px;cursor:pointer}
+.btn{
+  background:linear-gradient(180deg,#28315f,#1a2046);
+  border:1px solid #39407a;
+  color:#eaf1fb;
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+}
 .btn:hover{filter:brightness(1.08)}
 .btn.ghost{background:transparent;border:1px dashed #3a437b}
 .btn.small{padding:6px 10px;border-radius:10px;font-size:13px}
 .btn.good{background:#16351f;border-color:#246a38}
 .btn.bad{background:#3a1417;border-color:#7a2e35}
 .btn.warn{background:#3c2a0d;border-color:#90601b}
-.input, textarea, select{background:#0e1434;border:1px solid #2b3567;color:#eaf1fb;border-radius:10px;padding:10px}
+.input, textarea, select{
+  background:#0e1434;
+  border:1px solid #2b3567;
+  color:#eaf1fb;
+  border-radius:10px;
+  padding:10px;
+}
 .input::placeholder, textarea::placeholder{color:#8ea0b6}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
 .tabs{display:flex;gap:8px;margin:8px 0 16px}
-.tab{padding:10px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer;background:#10153a}
-.tab.active{background:#1a2253;box-shadow:inset 0 0 0 1px #4650a6}
+.tab{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  cursor:pointer;
+  background:#10153a;
+}
+.tab.active{
+  background:#1a2253;
+  box-shadow:inset 0 0 0 1px #4650a6;
+}
 .grid{display:grid;gap:8px}
 .board{user-select:none}
-.board .cell{display:flex;align-items:center;justify-content:center;background:radial-gradient(120px 80px at 50% -20%,#25408d,#0c1a47);border:1px solid #374ea6;border-radius:12px;padding:14px;font-weight:800;text-align:center;min-height:84px;letter-spacing:1.2px;color:#f6d04d;text-shadow:0 2px 0 #1c2a66,0 0 12px rgba(246,208,77,.5);cursor:pointer}
-.board .cell.used{background:#0b1130;color:#344}
-.board .head{background:linear-gradient(180deg,#24358a 0%,#1a2a71 100%);color:#a7f3d0;text-shadow:none;font-weight:900;border-color:#4258c9}
+.board .cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(120px 80px at 50% -20%,#25408d,#0c1a47);
+  border:1px solid #374ea6;
+  border-radius:12px;
+  padding:14px;
+  font-weight:800;
+  text-align:center;
+  min-height:84px;
+  letter-spacing:1.2px;
+  color:#f6d04d;
+  text-shadow:0 2px 0 #1c2a66,0 0 12px rgba(246,208,77,.5);
+  cursor:pointer;
+}
+.board .cell.used{
+  background:#05071b;
+  color:#222;
+  text-shadow:none;
+}
+.board .head{
+  background:linear-gradient(180deg,#24358a 0%,#1a2a71 100%);
+  color:#a7f3d0;
+  text-shadow:none;
+  font-weight:900;
+  border-color:#4258c9;
+}
 .flex{display:flex;gap:12px}
 .col{flex:1 1 0}
 .kv{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center}
 .hr{height:1px;background:var(--line);margin:12px 0}
 .small{font-size:12px;color:var(--muted)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.badge{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:#0d173b;border:1px solid #2a3b8f}
-.score{padding:10px 12px;border-radius:10px;background:#0e1737;border:1px solid #2a3361;display:flex;align-items:center;gap:8px}
+.badge{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#0d173b;
+  border:1px solid #2a3b8f;
+}
+.score{
+  padding:10px 12px;
+  border-radius:10px;
+  background:#0e1737;
+  border:1px solid #2a3361;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
 .score .p{font-weight:700}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,11,24,.7);backdrop-filter:blur(2px);z-index:50}
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(8,11,24,.7);
+  backdrop-filter:blur(2px);
+  z-index:50;
+}
 .modal.show{display:flex}
-.sheet{width:min(860px,96vw);max-height:90vh;overflow:auto;background:#0f1434;border:1px solid #39407a;border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.4)}
-.sheet .hd{padding:14px 16px;border-bottom:1px solid #2b3567;font-weight:800}
+.sheet{
+  width:min(860px,96vw);
+  max-height:90vh;
+  overflow:auto;
+  background:#0f1434;
+  border:1px solid #39407a;
+  border-radius:16px;
+  box-shadow:0 20px 80px rgba(0,0,0,.4);
+}
+.sheet .hd{
+  padding:14px 16px;
+  border-bottom:1px solid #2b3567;
+  font-weight:800;
+}
 .sheet .bd{padding:16px}
 .center{text-align:center}
-.timer{font-variant-numeric:tabular-nums;font-size:42px;letter-spacing:2px}
-kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6px}
+.timer{
+  font-variant-numeric:tabular-nums;
+  font-size:42px;
+  letter-spacing:2px;
+  margin:4px 0 10px;
+}
+kbd{
+  background:#141a3b;
+  border:1px solid #33407a;
+  padding:2px 6px;
+  border-radius:6px;
+}
 .table{width:100%;border-collapse:separate;border-spacing:0 8px}
 .table th{color:#a7f3d0;text-align:left;font-size:13px}
-.table td{background:#0e1434;border:1px solid #2b3567;padding:8px;border-radius:8px}
-.alert{padding:10px 12px;background:#152140;border:1px solid #2b3567;border-radius:10px}
+.table td{
+  background:#0e1434;
+  border:1px solid #2b3567;
+  padding:8px;
+  border-radius:8px;
+}
+.alert{
+  padding:10px 12px;
+  background:#152140;
+  border:1px solid #2b3567;
+  border-radius:10px;
+}
 .hidden{display:none}
+
+/* Board wrapper (the big play area card) */
+.board-wrap{
+  background:#050922;
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+}
+
+/* FNaF-style checker overlay for some themes */
+.board-wrap.checker {
+  background-image:
+    linear-gradient(45deg, rgba(0,0,0,0.6) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0.6)),
+    linear-gradient(45deg, rgba(0,0,0,0.35) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.35));
+  background-size:40px 40px;
+  background-position:0 0,20px 20px;
+}
+
+/* THEMES — swap via body.theme-* */
+
+/* Default (same as :root) */
+body.theme-default{}
+
+/* FNaF Blue */
+body.theme-fnaf-blue{
+  --bg:#020617;
+  --panel:#050816;
+  --text:#e5f4ff;
+  --muted:#9ca9c8;
+  --accent:#38bdf8;
+  --accent2:#a7f3d0;
+  --line:#1e293b;
+  --tile:#020617;
+  --good:#22c55e;
+  --bad:#ef4444;
+  --warn:#facc15;
+}
+
+/* FNaF Red */
+body.theme-fnaf-red{
+  --bg:#120205;
+  --panel:#190309;
+  --text:#ffe9e9;
+  --muted:#fecaca;
+  --accent:#fb7185;
+  --accent2:#fee2e2;
+  --line:#4b1018;
+  --tile:#0b0203;
+  --good:#22c55e;
+  --bad:#f97373;
+  --warn:#facc15;
+}
+
+/* FNaF Purple (Sister Location vibes) */
+body.theme-fnaf-purple{
+  --bg:#050016;
+  --panel:#0b021f;
+  --text:#f3e8ff;
+  --muted:#c4b5fd;
+  --accent:#a855f7;
+  --accent2:#e9d5ff;
+  --line:#312e81;
+  --tile:#050016;
+  --good:#22c55e;
+  --bad:#fb7185;
+  --warn:#facc15;
+}
+
+/* Arcade Green (neon) */
+body.theme-arcade{
+  --bg:#020713;
+  --panel:#020617;
+  --text:#eafffb;
+  --muted:#6ee7b7;
+  --accent:#22c55e;
+  --accent2:#bbf7d0;
+  --line:#064e3b;
+  --tile:#020617;
+  --good:#22c55e;
+  --bad:#f97373;
+  --warn:#eab308;
+}
+
+/* Board-wrap tweaks per theme */
+body.theme-fnaf-blue .board-wrap{
+  background-color:#041834;
+}
+body.theme-fnaf-red .board-wrap{
+  background-color:#2f070a;
+}
+body.theme-fnaf-purple .board-wrap{
+  background-color:#1b1038;
+}
+body.theme-arcade .board-wrap{
+  background:radial-gradient(circle at top,#16a34a 0,#020617 55%);
+}
 
 /* Mobile tweaks */
 @media (max-width:800px){
@@ -62,7 +284,7 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
 }
 </style>
 </head>
-<body>
+<body class="theme-default">
   <div class="container">
     <div class="h-row">
       <h1 style="margin:6px 0">Jeopardy Party</h1>
@@ -74,7 +296,14 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
       <button class="tab active" data-tab="play">▶ Play</button>
       <button class="tab" data-tab="editor">✍ Pack Editor</button>
       <button class="tab" data-tab="packs">📦 Packs</button>
-      <span class="small" style="margin-left:auto">Tip: Buzzers A S D F / J K L ; or click ✋</span>
+      <select id="themeSelect" class="input" style="margin-left:auto;max-width:190px;font-size:13px">
+        <option value="default">Theme: Default</option>
+        <option value="fnaf-blue">Theme: FNaF Blue</option>
+        <option value="fnaf-red">Theme: FNaF Red</option>
+        <option value="fnaf-purple">Theme: FNaF Purple</option>
+        <option value="arcade">Theme: Arcade Green</option>
+      </select>
+      <span class="small">Tip: Buzzers A S D F / J K L ; or click ✋</span>
     </div>
 
     <!-- PLAY TAB -->
@@ -105,7 +334,7 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
 
       <div class="hr"></div>
 
-      <div id="boardWrap" class="card" style="background:#0c1130">
+      <div id="boardWrap" class="card board-wrap checker">
         <div id="board" class="grid board"></div>
       </div>
 
@@ -180,12 +409,19 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
   <!-- MODALS -->
   <div id="modalCard" class="modal" aria-hidden="true">
     <div class="sheet">
-      <div class="hd row"><span id="mCategory">Category</span><span class="badge" id="mValue">$200</span><span class="badge" id="mFlags"></span><button class="btn small ghost" style="margin-left:auto" id="mClose">✖</button></div>
+      <div class="hd row">
+        <span id="mCategory">Category</span>
+        <span class="badge" id="mValue">$200</span>
+        <span class="badge" id="mFlags"></span>
+        <button class="btn small ghost" style="margin-left:auto" id="mClose">✖</button>
+      </div>
       <div class="bd">
         <div class="center" style="margin-bottom:8px">
           <div id="mQuestion" style="font-size:28px;line-height:1.3;margin:0 auto 6px;max-width:800px"></div>
           <div class="small" id="mRevealHint">Tap R to reveal answer</div>
         </div>
+
+        <div id="timerDisplay" class="center timer hidden">10</div>
 
         <div class="row center" style="justify-content:center;margin:8px 0">
           <button class="btn" id="btnReveal">Reveal Answer</button>
@@ -198,7 +434,8 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
         </div>
 
         <div id="buzzWrap" class="hidden">
-          <div class="alert center">Buzz with keys: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> • <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>;</kbd> or click a ✋ on a player card.
+          <div class="alert center">
+            Buzz with keys: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> • <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>;</kbd> or click a ✋ on a player card.
           </div>
           <div id="buzzResult" class="center" style="margin:10px 0;font-size:22px"></div>
         </div>
@@ -220,7 +457,7 @@ kbd{background:#141a3b;border:1px solid #33407a;padding:2px 6px;border-radius:6p
           <li><kbd>R</kbd> reveal answer</li>
           <li><kbd>T</kbd> start/stop timer</li>
           <li><kbd>B</kbd> open buzzers</li>
-          <li><kbd>←/→</kbd> navigate unanswered clues in current row</li>
+          <li><kbd>←/→</kbd> navigate unanswered clues in the current row</li>
           <li><kbd>Esc</kbd> close card</li>
         </ul>
       </div>
@@ -251,6 +488,9 @@ const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
 const uid = ()=>'p_'+Math.random().toString(36).slice(2,9);
 const nowIso = ()=> new Date().toISOString();
 
+const THEME_KEY = 'jp_theme';
+const THEMES = ['default','fnaf-blue','fnaf-red','fnaf-purple','arcade'];
+
 const store = {
   get packs(){ return JSON.parse(localStorage.getItem('jp_packs')||'[]'); },
   set packs(v){ localStorage.setItem('jp_packs', JSON.stringify(v)); },
@@ -270,37 +510,87 @@ let currentPack=null; // loaded pack
 let players=[]; // {id,name,score,key}
 let buzzOpen=false, buzzWinner=null, activeCell=null; // {c,r}
 let timerInt=null, timerLeft=0;
+let currentTheme='default';
+
+/**********************
+ * Theme handling
+ **********************/
+function applyTheme(name){
+  if(!THEMES.includes(name)) name='default';
+  currentTheme=name;
+  const body=document.body;
+  THEMES.forEach(t=>body.classList.remove('theme-'+t));
+  body.classList.add('theme-'+name);
+  const sel = $('#themeSelect');
+  if(sel && sel.value!==name) sel.value = name;
+  localStorage.setItem(THEME_KEY, name);
+
+  // Board checker only on FNaF themes
+  const wrap = $('#boardWrap');
+  if(wrap){
+    if(name==='fnaf-blue' || name==='fnaf-red' || name==='fnaf-purple'){
+      wrap.classList.add('checker');
+    }else{
+      wrap.classList.remove('checker');
+    }
+  }
+}
 
 /**********************
  * UI helpers
  **********************/
 function toast(msg){
   const d=document.createElement('div');
-  d.textContent=msg; d.style.position='fixed'; d.style.left='50%'; d.style.top='16px'; d.style.transform='translateX(-50%)'; d.style.background='#10204a'; d.style.border='1px solid #2a3b8f'; d.style.color='white'; d.style.padding='8px 12px'; d.style.borderRadius='10px'; d.style.zIndex='80';
-  document.body.appendChild(d); setTimeout(()=>d.remove(), 1600);
+  d.textContent=msg;
+  d.style.position='fixed';
+  d.style.left='50%';
+  d.style.top='16px';
+  d.style.transform='translateX(-50%)';
+  d.style.background='#10204a';
+  d.style.border='1px solid #2a3b8f';
+  d.style.color='white';
+  d.style.padding='8px 12px';
+  d.style.borderRadius='10px';
+  d.style.zIndex='80';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), 1600);
 }
 
 function buildBoard(){
   const board = $('#board');
   board.innerHTML='';
-  if(!currentPack){ board.innerHTML='<div class="small">Load a pack to play.</div>'; return; }
+  if(!currentPack){
+    board.innerHTML='<div class="small">Load a pack to play.</div>';
+    $('#packName').textContent = '(none)';
+    $('#packSize').textContent = '0×0';
+    $('#ddCount').textContent = '0';
+    return;
+  }
   const {cols,rows,categories,values,grid}=currentPack;
-  const cs = `repeat(${cols}, 1fr)`; const rs = `repeat(${rows+1}, auto)`;
-  board.style.gridTemplateColumns = cs; board.style.gridTemplateRows = rs;
+  const cs = `repeat(${cols}, 1fr)`;
+  const rs = `repeat(${rows+1}, auto)`;
+  board.style.gridTemplateColumns = cs;
+  board.style.gridTemplateRows = rs;
   // headers
   for(let c=0;c<cols;c++){
-    const h = document.createElement('div'); h.className='cell head'; h.textContent=categories[c]||`Cat ${c+1}`; h.style.minHeight='72px';
+    const h = document.createElement('div');
+    h.className='cell head';
+    h.textContent=categories[c]||`Cat ${c+1}`;
+    h.style.minHeight='72px';
     board.appendChild(h);
   }
   // cells
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
-      const cell = document.createElement('button'); cell.className='cell';
+      const cell = document.createElement('button');
+      cell.className='cell';
       const item = grid[c][r];
-      cell.dataset.c=c; cell.dataset.r=r; cell.disabled = !!item.used;
+      cell.dataset.c=c;
+      cell.dataset.r=r;
+      cell.disabled = !!item.used;
       if(item.used) cell.classList.add('used');
       const val = values?.[c]?.[r] ?? ((r+1)*200);
-      cell.textContent = item.used?'' : `$${val}`;
+      cell.textContent = item.used ? '' : `$${val}`;
       if(item.dd && !item.used){ cell.textContent+=' ★'; }
       cell.addEventListener('click', ()=>openCard(c,r));
       board.appendChild(cell);
@@ -316,18 +606,33 @@ function refreshPlayers(){
   const keyMap=['A','S','D','F','J','K','L',';'];
   players.forEach((p,i)=>{
     const card=document.createElement('div'); card.className='score';
-    card.innerHTML=`<span class="p">${p.name}</span><span class="small">(${p.key||keyMap[i]||'✋'})</span>
+    card.innerHTML=`
+      <span class="p">${p.name}</span>
+      <span class="small">(${p.key || keyMap[i] || '✋'})</span>
       <span>•</span><b>${p.score}</b>
       <button class="btn small good" data-d="+100">+100</button>
       <button class="btn small bad" data-d="-100">-100</button>
       <button class="btn small ghost" data-act="buzz">✋</button>
       <button class="btn small ghost" data-act="rm">✖</button>`;
     card.querySelectorAll('button').forEach(btn=>{
-      btn.addEventListener('click',e=>{
+      btn.addEventListener('click',()=>{
         const d = btn.dataset.d; const act=btn.dataset.act;
-        if(d){ p.score += parseInt(d,10); refreshPlayers(); return; }
-        if(act==='rm'){ players = players.filter(x=>x.id!==p.id); refreshPlayers(); return; }
-        if(act==='buzz'){ if(buzzOpen && !buzzWinner){ buzzWinner=p; showBuzzWinner(p); } }
+        if(d){
+          p.score += parseInt(d,10);
+          refreshPlayers();
+          return;
+        }
+        if(act==='rm'){
+          players = players.filter(x=>x.id!==p.id);
+          refreshPlayers();
+          return;
+        }
+        if(act==='buzz'){
+          if(buzzOpen && !buzzWinner){
+            buzzWinner=p;
+            showBuzzWinner(p);
+          }
+        }
       });
     });
     wrap.appendChild(card);
@@ -338,48 +643,128 @@ function refreshPlayers(){
  * Gameplay modals
  **********************/
 function openCard(c,r){
-  activeCell={c,r}; buzzOpen=false; buzzWinner=null; $('#buzzResult').textContent='';
+  activeCell={c,r};
+  buzzOpen=false; buzzWinner=null;
+  $('#buzzResult').textContent='';
+  stopTimer();
   const item=currentPack.grid[c][r];
   $('#mCategory').textContent=currentPack.categories[c]||`Cat ${c+1}`;
   $('#mValue').textContent = `$${currentPack.values?.[c]?.[r] ?? (r+1)*200}`;
-  $('#mFlags').textContent = item.dd?'DAILY DOUBLE':'';
+  $('#mFlags').textContent = item.dd ? 'DAILY DOUBLE' : '';
   $('#mQuestion').textContent=item.q||'(No question)';
   $('#mAnswer').textContent=item.a||'(No answer set)';
   $('#answerWrap').classList.add('hidden');
   $('#buzzWrap').classList.add('hidden');
   $('#modalCard').classList.add('show');
 }
-function closeCard(){ $('#modalCard').classList.remove('show'); stopTimer(); }
-function reveal(){ $('#answerWrap').classList.remove('hidden'); }
-function openBuzz(){ buzzOpen=true; buzzWinner=null; $('#buzzWrap').classList.remove('hidden'); $('#buzzResult').textContent='Buzzers open!'; }
-function showBuzzWinner(p){ if(!p) return; buzzWinner=p; buzzOpen=false; $('#buzzResult').textContent = `${p.name} buzzed in!`; }
+function closeCard(){
+  $('#modalCard').classList.remove('show');
+  stopTimer();
+}
+function reveal(){
+  $('#answerWrap').classList.remove('hidden');
+}
+function openBuzz(){
+  buzzOpen=true;
+  buzzWinner=null;
+  $('#buzzWrap').classList.remove('hidden');
+  $('#buzzResult').textContent='Buzzers open!';
+}
+function showBuzzWinner(p){
+  if(!p) return;
+  buzzWinner=p;
+  buzzOpen=false;
+  $('#buzzResult').textContent = `${p.name} buzzed in!`;
+}
 function applyResult(correct){
-  if(!activeCell) return; const {c,r}=activeCell; const val = currentPack.values?.[c]?.[r] ?? (r+1)*200;
-  if(buzzWinner){ buzzWinner.score += correct? val : -val; }
-  currentPack.grid[c][r].used=true; closeCard(); buildBoard(); refreshPlayers();
+  if(!activeCell || !currentPack) return;
+  const {c,r}=activeCell;
+  const val = currentPack.values?.[c]?.[r] ?? (r+1)*200;
+  if(buzzWinner){
+    buzzWinner.score += correct ? val : -val;
+  }
+  currentPack.grid[c][r].used=true;
+  closeCard();
+  buildBoard();
+  refreshPlayers();
 }
 
-function countDD(pack){ let n=0; for(let c=0;c<pack.cols;c++){ for(let r=0;r<pack.rows;r++){ if(pack.grid[c][r].dd) n++; }} return n; }
+function countDD(pack){
+  let n=0;
+  for(let c=0;c<pack.cols;c++){
+    for(let r=0;r<pack.rows;r++){
+      if(pack.grid[c][r].dd) n++;
+    }
+  }
+  return n;
+}
 
 /**********************
  * Timer
  **********************/
-function startTimer(sec=10){ stopTimer(); timerLeft=sec; $('#btnTimer').textContent=`Stop (${timerLeft})`; timerInt=setInterval(()=>{ timerLeft--; $('#btnTimer').textContent=`Stop (${timerLeft})`; if(timerLeft<=0) stopTimer(); },1000); }
-function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt=null; $('#btnTimer').textContent='Start 10s Timer'; }}
+function startTimer(sec=10){
+  stopTimer();
+  timerLeft=sec;
+  const btn=$('#btnTimer');
+  const el=$('#timerDisplay');
+  if(el){
+    el.classList.remove('hidden');
+    el.textContent=String(timerLeft);
+  }
+  if(btn) btn.textContent=`Stop (${timerLeft})`;
+  timerInt=setInterval(()=>{
+    timerLeft--;
+    const el2=$('#timerDisplay');
+    if(el2) el2.textContent = timerLeft>0 ? String(timerLeft) : '0';
+    const btn2=$('#btnTimer');
+    if(btn2) btn2.textContent = timerLeft>0 ? `Stop (${timerLeft})` : 'Start 10s Timer';
+    if(timerLeft<=0) stopTimer();
+  },1000);
+}
+function stopTimer(){
+  if(timerInt){
+    clearInterval(timerInt);
+    timerInt=null;
+  }
+  timerLeft=0;
+  const btn=$('#btnTimer');
+  if(btn) btn.textContent='Start 10s Timer';
+  const el=$('#timerDisplay');
+  if(el) el.classList.add('hidden');
+}
 
 /**********************
  * Final Jeopardy (simple flow)
  **********************/
 function finalJeopardy(){
-  if(!currentPack?.final){ toast('No Final set in this pack.'); return; }
-  const q=currentPack.final.q||'(No final question)'; const a=currentPack.final.a||'(No final answer)';
-  const wagers={};// name->amount
+  if(!currentPack?.final){
+    toast('No Final set in this pack.');
+    return;
+  }
+  const q=currentPack.final.q||'(No final question)';
+  const a=currentPack.final.a||'(No final answer)';
+  const wagers={};
   const amt = prompt('Enter wagers as name:amount, comma separated (e.g., Alice:500,Bob:1200)');
-  if(amt){ amt.split(',').forEach(pair=>{ const [n,v]=pair.split(':'); if(n&&v) wagers[n.trim()]=parseInt(v,10)||0; }); }
-  alert('Final Question:\\n\\n'+q+'\\n\\nLock answers, then click OK to reveal answer.');
-  alert('Final Answer:\\n\\n'+a);
+  if(amt){
+    amt.split(',').forEach(pair=>{
+      const [n,v]=pair.split(':');
+      if(n && v) wagers[n.trim()]=parseInt(v,10)||0;
+    });
+  }
+  alert('Final Question:\n\n'+q+'\n\nLock answers, then click OK to reveal answer.');
+  alert('Final Answer:\n\n'+a);
   const res = prompt('Enter results as name:+/- (e.g., Alice:+, Bob:-)');
-  if(res){ res.split(',').forEach(pair=>{ const [n,s]=pair.split(':'); if(!n||!s) return; const p=players.find(x=>x.name.trim().toLowerCase()===n.trim().toLowerCase()); if(!p) return; const w=wagers[p.name]||0; p.score += (s.trim()==='+')? w : -w; }); refreshPlayers(); }
+  if(res){
+    res.split(',').forEach(pair=>{
+      const [n,s]=pair.split(':');
+      if(!n || !s) return;
+      const p=players.find(x=>x.name.trim().toLowerCase()===n.trim().toLowerCase());
+      if(!p) return;
+      const w=wagers[p.name]||0;
+      p.score += (s.trim()==='+') ? w : -w;
+    });
+    refreshPlayers();
+  }
 }
 
 /**********************
@@ -388,7 +773,6 @@ function finalJeopardy(){
 function wipeEditor(){
   if(!confirm('Completely wipe the editor? This will create an empty 0×0 custom pack.')) return;
 
-  // Build an empty pack structure (0x0)
   const fresh = {
     id: uid(),
     title: '',
@@ -401,7 +785,6 @@ function wipeEditor(){
     savedAt: nowIso()
   };
 
-  // Apply and render
   currentPack = fresh;
   $('#eCols').value = 0;
   $('#eRows').value = 0;
@@ -415,54 +798,97 @@ function wipeEditor(){
 
 function buildEditorGrid(cols,rows){
   const wrap=$('#eGrid'); wrap.innerHTML='';
-  const head=document.createElement('div'); head.className='grid'; head.style.gridTemplateColumns=`repeat(${cols}, 1fr)`; head.style.gap='8px';
+
+  const head=document.createElement('div');
+  head.className='grid';
+  head.style.gridTemplateColumns=`repeat(${cols}, 1fr)`;
+  head.style.gap='8px';
   for(let c=0;c<cols;c++){
-    const inp=document.createElement('input'); inp.className='input'; inp.placeholder=`Category ${c+1}`; inp.value=currentPack?.categories?.[c]||''; inp.dataset.cat=c; head.appendChild(inp);
+    const inp=document.createElement('input');
+    inp.className='input';
+    inp.placeholder=`Category ${c+1}`;
+    inp.value=currentPack?.categories?.[c]||'';
+    inp.dataset.cat=c;
+    head.appendChild(inp);
   }
   wrap.appendChild(head);
 
-  const body=document.createElement('div'); body.className='grid'; body.style.gridTemplateColumns=`repeat(${cols}, 1fr)`; body.style.gap='8px';
+  const body=document.createElement('div');
+  body.className='grid';
+  body.style.gridTemplateColumns=`repeat(${cols}, 1fr)`;
+  body.style.gap='8px';
+
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
-      const card=document.createElement('div'); card.className='card'; card.style.padding='12px';
+      const card=document.createElement('div');
+      card.className='card';
+      card.style.padding='12px';
       const val=((r+1)*200);
-      card.innerHTML=`<div class="row" style="justify-content:space-between"><b>$${val}</b><label class="small"><input type="checkbox" data-dd="${c},${r}"> Daily Double</label></div>
-      <textarea class="input" rows="3" placeholder="Question" data-q="${c},${r}"></textarea>
-      <textarea class="input" rows="2" placeholder="Answer" data-a="${c},${r}"></textarea>`;
+      card.innerHTML=`
+        <div class="row" style="justify-content:space-between">
+          <b>$${val}</b>
+          <label class="small">
+            <input type="checkbox" data-dd="${c},${r}"> Daily Double
+          </label>
+        </div>
+        <textarea class="input" rows="3" placeholder="Question" data-q="${c},${r}"></textarea>
+        <textarea class="input" rows="2" placeholder="Answer" data-a="${c},${r}"></textarea>`;
       body.appendChild(card);
     }
   }
   wrap.appendChild(body);
 
-  // If editing an existing pack, prefill
+  // Prefill from currentPack if editing
   if(currentPack){
-    $$('#eGrid [data-cat]').forEach(inp=>{ const c=+inp.dataset.cat; inp.value=currentPack.categories[c]||''; });
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-      const item=currentPack.grid?.[c]?.[r];
-      const tq=$(`#eGrid [data-q="${c},${r}"]`); const ta=$(`#eGrid [data-a="${c},${r}"]`); const dd=$(`#eGrid [data-dd="${c},${r}"]`);
-      if(item){ if(tq) tq.value=item.q||''; if(ta) ta.value=item.a||''; if(dd) dd.checked=!!item.dd; }
+    $$('#eGrid [data-cat]').forEach(inp=>{
+      const c=+inp.dataset.cat;
+      inp.value=currentPack.categories[c]||'';
+    });
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const item=currentPack.grid?.[c]?.[r];
+        const tq=$(`#eGrid [data-q="${c},${r}"]`);
+        const ta=$(`#eGrid [data-a="${c},${r}"]`);
+        const dd=$(`#eGrid [data-dd="${c},${r}"]`);
+        if(item){
+          if(tq) tq.value=item.q||'';
+          if(ta) ta.value=item.a||'';
+          if(dd) dd.checked=!!item.dd;
+        }
+      }
     }
     $('#eTitle').value=currentPack.title||'';
-    $('#eFinalQ').value=currentPack.final?.q||''; $('#eFinalA').value=currentPack.final?.a||'';
-    $('#eDDCount').textContent = countDD(currentPack);
+    $('#eFinalQ').value=currentPack.final?.q||'';
+    $('#eFinalA').value=currentPack.final?.a||'';
   }
+
+  // Update DD count anytime a DD box changes
+  $$('#eGrid [data-dd]').forEach(el=>{
+    el.addEventListener('change',()=>{
+      $('#eDDCount').textContent = [...$$('#eGrid [data-dd]')].filter(i=>i.checked).length;
+    });
+  });
+  $('#eDDCount').textContent = [...$$('#eGrid [data-dd]')].filter(i=>i.checked).length;
 }
 
 function readEditorToPack(){
-  const cols=+$('#eCols').value, rows=+$('#eRows').value;
+  const cols=+$('#eCols').value;
+  const rows=+$('#eRows').value;
   const categories=[...$$('#eGrid [data-cat]')].map(i=>i.value||'');
   const grid=[...Array(cols)].map(()=>Array(rows).fill(null));
-  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-    const q=$(`#eGrid [data-q="${c},${r}"]`)?.value||'';
-    const a=$(`#eGrid [data-a="${c},${r}"]`)?.value||'';
-    const dd=$(`#eGrid [data-dd="${c},${r}"]`)?.checked||false;
-    grid[c][r]={q,a,used:false,dd};
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const q=$(`#eGrid [data-q="${c},${r}"]`)?.value||'';
+      const a=$(`#eGrid [data-a="${c},${r}"]`)?.value||'';
+      const dd=$(`#eGrid [data-dd="${c},${r}"]`)?.checked||false;
+      grid[c][r]={q,a,used:false,dd};
+    }
   }
   const pack = {
     id: currentPack?.id || uid(),
     title: $('#eTitle').value||'Untitled Pack',
     cols, rows, categories,
-    values: [...Array(cols)].map(()=>[...Array(rows)].map((_,r)=>(r+1)*200)),
+    values: [...Array(cols)].map(()=>[...Array(rows)].map((_,rIdx)=>(rIdx+1)*200)),
     grid,
     final: { q: $('#eFinalQ').value||'', a: $('#eFinalA').value||'' },
     savedAt: nowIso()
@@ -471,15 +897,20 @@ function readEditorToPack(){
 }
 
 function autoPlaceDD(){
-  const cols=+$('#eCols').value, rows=+$('#eRows').value;
+  const cols=+$('#eCols').value;
+  const rows=+$('#eRows').value;
   const picks = new Set();
   const attempts = Math.min(2, Math.ceil(rows/3));
-  while(picks.size<attempts){
-    const c=Math.floor(Math.random()*cols), r=Math.floor(Math.random()*rows);
+  while(picks.size<attempts && cols>0 && rows>0){
+    const c=Math.floor(Math.random()*cols);
+    const r=Math.floor(Math.random()*rows);
     picks.add(c+','+r);
   }
-  picks.forEach(id=>{ const el=$(`#eGrid [data-dd="${id}"]`); if(el) el.checked=true; });
-  $('#eDDCount').textContent=[...$$('#eGrid [data-dd]')].filter(i=>i.checked).length;
+  picks.forEach(id=>{
+    const el=$(`#eGrid [data-dd="${id}"]`);
+    if(el) el.checked=true;
+  });
+  $('#eDDCount').textContent = [...$$('#eGrid [data-dd]')].filter(i=>i.checked).length;
 }
 
 /**********************
@@ -489,7 +920,10 @@ function refreshPackTable(){
   const tbody = $('#packTable tbody'); tbody.innerHTML='';
   store.packs.forEach(p=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${p.title}</td><td>${p.cols}×${p.rows}</td><td>${new Date(p.savedAt||Date.now()).toLocaleString()}</td>
+    tr.innerHTML=`
+      <td>${p.title}</td>
+      <td>${p.cols}×${p.rows}</td>
+      <td>${new Date(p.savedAt||Date.now()).toLocaleString()}</td>
       <td>
         <button class="btn small" data-act="load" data-id="${p.id}">Load</button>
         <button class="btn small" data-act="edit" data-id="${p.id}">Edit</button>
@@ -500,12 +934,34 @@ function refreshPackTable(){
   });
   tbody.querySelectorAll('button').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      const id=btn.dataset.id; const p=store.get(id); if(!p) return;
+      const id=btn.dataset.id;
+      const p=store.get(id);
+      if(!p) return;
       switch(btn.dataset.act){
-        case 'load': currentPack=JSON.parse(JSON.stringify(p)); buildBoard(); switchTab('play'); break;
-        case 'edit': currentPack=JSON.parse(JSON.stringify(p)); $('#eCols').value=p.cols; $('#eRows').value=p.rows; buildEditorGrid(p.cols,p.rows); switchTab('editor'); break;
-        case 'del': if(confirm('Delete pack "'+p.title+'"?')){ store.remove(id); if(currentPack?.id===id){ currentPack=null; buildBoard(); } } break;
-        case 'download': downloadJSON(p.title.replace(/[^a-z0-9\-_ ]/gi,'_')+'.json', p); break;
+        case 'load':
+          currentPack=JSON.parse(JSON.stringify(p));
+          buildBoard();
+          switchTab('play');
+          break;
+        case 'edit':
+          currentPack=JSON.parse(JSON.stringify(p));
+          $('#eCols').value=p.cols;
+          $('#eRows').value=p.rows;
+          buildEditorGrid(p.cols,p.rows);
+          switchTab('editor');
+          break;
+        case 'del':
+          if(confirm('Delete pack "'+p.title+'"?')){
+            store.remove(id);
+            if(currentPack?.id===id){
+              currentPack=null;
+              buildBoard();
+            }
+          }
+          break;
+        case 'download':
+          downloadJSON(p.title.replace(/[^a-z0-9\-_ ]/gi,'_')+'.json', p);
+          break;
       }
     });
   });
@@ -513,7 +969,12 @@ function refreshPackTable(){
 
 function refreshPackSelect(){
   const sel=$('#packSelect'); sel.innerHTML='';
-  store.packs.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.title; sel.appendChild(o); });
+  store.packs.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.id;
+    o.textContent=p.title;
+    sel.appendChild(o);
+  });
 }
 
 /**********************
@@ -521,7 +982,12 @@ function refreshPackSelect(){
  **********************/
 function downloadJSON(filename, obj){
   const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 800);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 800);
 }
 
 function switchTab(name){
@@ -532,73 +998,189 @@ function switchTab(name){
 }
 
 /**********************
+ * Keyboard navigation (arrows in current row)
+ **********************/
+function navigateClue(delta){
+  if(!currentPack || !activeCell) return;
+  const {c,r}=activeCell;
+  const cols = currentPack.cols;
+  if(cols<=1) return;
+  let newC = null;
+  for(let step=1; step<cols; step++){
+    const tryC = (c + delta*step + cols) % cols;
+    if(!currentPack.grid[tryC][r].used){
+      newC = tryC;
+      break;
+    }
+  }
+  if(newC!==null && newC!==c){
+    openCard(newC,r);
+  }
+}
+
+/**********************
  * Events
  **********************/
 // Tabs
 $$('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
 $('#btnShowLegend').addEventListener('click',()=>$('#modalLegend').classList.add('show'));
-$('#modalLegend').addEventListener('click',e=>{ if(e.target.id==='modalLegend') $('#modalLegend').classList.remove('show'); });
+$('#modalLegend').addEventListener('click',e=>{
+  if(e.target.id==='modalLegend') $('#modalLegend').classList.remove('show');
+});
+
+// Theme select
+$('#themeSelect').addEventListener('change',e=>{
+  applyTheme(e.target.value || 'default');
+});
 
 // Players
-$('#btnAddPlayer').addEventListener('click',()=>{ const name=$('#playerName').value.trim(); if(!name) return; players.push({id:uid(),name,score:0}); $('#playerName').value=''; refreshPlayers(); });
-$('#btnClearPlayers').addEventListener('click',()=>{ if(confirm('Clear all players?')){ players=[]; refreshPlayers(); } });
+$('#btnAddPlayer').addEventListener('click',()=>{
+  const name=$('#playerName').value.trim();
+  if(!name) return;
+  players.push({id:uid(),name,score:0});
+  $('#playerName').value='';
+  refreshPlayers();
+});
+$('#btnClearPlayers').addEventListener('click',()=>{
+  if(confirm('Clear all players?')){
+    players=[];
+    refreshPlayers();
+  }
+});
 
-// Keyboard buzz
+// Keyboard buzz + shortcuts
 window.addEventListener('keydown',e=>{
-  const key = e.key.toLowerCase();
+  const keyRaw = e.key;
+  const key = keyRaw.toLowerCase();
   const mapping = ['a','s','d','f','j','k','l',';'];
+
   if(buzzOpen && !buzzWinner){
     const idx = mapping.indexOf(key);
-    if(idx>=0 && players[idx]){ showBuzzWinner(players[idx]); }
+    if(idx>=0 && players[idx]){
+      showBuzzWinner(players[idx]);
+    }
   }
+
   if($('#modalCard').classList.contains('show')){
     if(key==='r') reveal();
-    if(key==='t') { if(timerInt) stopTimer(); else startTimer(10); }
+    if(key==='t'){
+      if(timerInt) stopTimer(); else startTimer(10);
+    }
     if(key==='b') openBuzz();
     if(key==='escape') closeCard();
+    if(keyRaw === 'ArrowLeft'){
+      e.preventDefault();
+      navigateClue(-1);
+    }
+    if(keyRaw === 'ArrowRight'){
+      e.preventDefault();
+      navigateClue(1);
+    }
   }
 });
 
 // Card modal buttons
 $('#btnReveal').addEventListener('click',reveal);
-$('#btnTimer').addEventListener('click',()=>{ if(timerInt) stopTimer(); else startTimer(10); });
+$('#btnTimer').addEventListener('click',()=>{
+  if(timerInt) stopTimer(); else startTimer(10);
+});
 $('#btnBuzz').addEventListener('click',openBuzz);
 $('#btnCorrect').addEventListener('click',()=>applyResult(true));
 $('#btnWrong').addEventListener('click',()=>applyResult(false));
 $('#btnSkip').addEventListener('click',closeCard);
 $('#mClose').addEventListener('click',closeCard);
-$('#modalCard').addEventListener('click',e=>{ if(e.target.id==='modalCard') closeCard(); });
+$('#modalCard').addEventListener('click',e=>{
+  if(e.target.id==='modalCard') closeCard();
+});
 
 // Play: packs
-$('#btnLoadPack').addEventListener('click',()=>{ const id=$('#packSelect').value; const p=store.get(id); if(p){ currentPack=JSON.parse(JSON.stringify(p)); buildBoard(); switchTab('play'); }});
-$('#btnNewGame').addEventListener('click',()=>{ if(!currentPack){ toast('Load a pack first.'); return; } // reset used flags
-  currentPack.grid.forEach(col=>col.forEach(cell=>cell.used=false)); buildBoard(); });
-$('#btnResetBoard').addEventListener('click',()=>{ if(confirm('Reset used clues on this board?')){ currentPack.grid.forEach(col=>col.forEach(cell=>cell.used=false)); buildBoard(); }});
+$('#btnLoadPack').addEventListener('click',()=>{
+  const id=$('#packSelect').value;
+  const p=store.get(id);
+  if(p){
+    currentPack=JSON.parse(JSON.stringify(p));
+    buildBoard();
+    switchTab('play');
+  }
+});
+$('#btnNewGame').addEventListener('click',()=>{
+  if(!currentPack){
+    toast('Load a pack first.');
+    return;
+  }
+  currentPack.grid.forEach(col=>col.forEach(cell=>cell.used=false));
+  buildBoard();
+});
+$('#btnResetBoard').addEventListener('click',()=>{
+  if(!currentPack) return;
+  if(confirm('Reset used clues on this board?')){
+    currentPack.grid.forEach(col=>col.forEach(cell=>cell.used=false));
+    buildBoard();
+  }
+});
 $('#btnFinal').addEventListener('click',finalJeopardy);
 
 // Editor
-$('#btnBuildGrid').addEventListener('click',()=>{ currentPack = readEditorToPack(); buildEditorGrid(currentPack.cols,currentPack.rows); $('#eDDCount').textContent = countDD(currentPack); toast('Grid built.'); });
-$('#btnSavePack').addEventListener('click',()=>{ const pack=readEditorToPack(); pack.savedAt=nowIso(); store.put(pack); toast('Saved to browser.'); });
-$('#btnExportPack').addEventListener('click',()=>{ const pack=readEditorToPack(); downloadJSON(pack.title.replace(/[^a-z0-9\-_ ]/gi,'_')+'.json', pack); });
+$('#btnBuildGrid').addEventListener('click',()=>{
+  currentPack = readEditorToPack();
+  buildEditorGrid(currentPack.cols,currentPack.rows);
+  $('#eDDCount').textContent = countDD(currentPack);
+  toast('Grid built.');
+});
+$('#btnSavePack').addEventListener('click',()=>{
+  const pack=readEditorToPack();
+  pack.savedAt=nowIso();
+  store.put(pack);
+  toast('Saved to browser.');
+});
+$('#btnExportPack').addEventListener('click',()=>{
+  const pack=readEditorToPack();
+  downloadJSON(pack.title.replace(/[^a-z0-9\-_ ]/gi,'_')+'.json', pack);
+});
 $('#fileImport').addEventListener('change',async (e)=>{
-  const f=e.target.files?.[0]; if(!f) return; const txt=await f.text();
-  try{ const pack=JSON.parse(txt); currentPack=pack; $('#eCols').value=pack.cols; $('#eRows').value=pack.rows; buildEditorGrid(pack.cols, pack.rows); toast('Imported!'); }
-  catch(err){ alert('Bad JSON pack.'); }
+  const f=e.target.files?.[0];
+  if(!f) return;
+  const txt=await f.text();
+  try{
+    const pack=JSON.parse(txt);
+    currentPack=pack;
+    $('#eCols').value=pack.cols;
+    $('#eRows').value=pack.rows;
+    buildEditorGrid(pack.cols, pack.rows);
+    toast('Imported!');
+  }catch(err){
+    alert('Bad JSON pack.');
+  }
 });
 $('#btnAutoDD').addEventListener('click',autoPlaceDD);
 $('#btnWipeEditor').addEventListener('click',wipeEditor);
 
 // Packs tab actions
-$('#btnSeedSamples').addEventListener('click',()=>{ seedSamples(); refreshPackTable(); refreshPackSelect(); toast('Sample packs added'); });
-$('#btnWipePacks').addEventListener('click',()=>{ if(confirm('Delete ALL saved packs?')){ localStorage.removeItem('jp_packs'); refreshPackTable(); refreshPackSelect(); }});
+$('#btnSeedSamples').addEventListener('click',()=>{
+  seedSamples();
+  refreshPackTable();
+  refreshPackSelect();
+  toast('Sample packs added');
+});
+$('#btnWipePacks').addEventListener('click',()=>{
+  if(confirm('Delete ALL saved packs?')){
+    localStorage.removeItem('jp_packs');
+    refreshPackTable();
+    refreshPackSelect();
+  }
+});
 
 /**********************
  * Samples & init
  **********************/
 function makeEmpty(cols=5, rows=5, title='Untitled Pack'){
-  return { id:uid(), title, cols, rows,
+  return {
+    id:uid(),
+    title,
+    cols,
+    rows,
     categories:[...Array(cols)].map((_,i)=>`Category ${i+1}`),
-    values:[...Array(cols)].map(()=>[...Array(rows)].map((_,r)=>(r+1)*200)),
+    values:[...Array(cols)].map(()=>[...Array(rows)].map((_,rIdx)=>(rIdx+1)*200)),
     grid:[...Array(cols)].map(()=>[...Array(rows)].map(()=>({q:'',a:'',used:false,dd:false}))),
     final:{q:'Your final question here', a:'Your final answer here'},
     savedAt: nowIso()
@@ -616,22 +1198,39 @@ function seedSamples(){
     ['Creator of Minecraft?','Markus "Notch" Persson'],
     ['Primary color not in RGB?','Yellow']
   ];
-  for(let r=0;r<5;r++) for(let c=0;c<5;c++){ p1.grid[c][r]={q:samples[c%5][0], a:samples[c%5][1], used:false, dd:false}; }
-  p1.grid[1][3].dd=true; p1.grid[3][4].dd=true; p1.final={q:'This planet is known as the Red Planet.', a:'What is Mars?'};
+  for(let r=0;r<5;r++){
+    for(let c=0;c<5;c++){
+      p1.grid[c][r]={q:samples[c%5][0], a:samples[c%5][1], used:false,dd:false};
+    }
+  }
+  p1.grid[1][3].dd=true;
+  p1.grid[3][4].dd=true;
+  p1.final={q:'This planet is known as the Red Planet.', a:'What is Mars?'};
 
   // Sample 2 shorter
   const p2=makeEmpty(4,4,'Movie Night');
   p2.categories=['Pixar','Marvel','Star Wars','Quotes'];
   p2.final={q:'Famous line finishing: "May the ___ be with you."', a:'Force'};
 
-  store.put(p1); store.put(p2);
+  store.put(p1);
+  store.put(p2);
 }
 
 (function init(){
+  // Theme
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
+  applyTheme(savedTheme);
+
   if(store.packs.length===0) seedSamples();
-  refreshPackTable(); refreshPackSelect();
+  refreshPackTable();
+  refreshPackSelect();
   // Default load first pack
-  if(store.packs[0]){ currentPack=JSON.parse(JSON.stringify(store.packs[0])); buildBoard(); }
+  if(store.packs[0]){
+    currentPack=JSON.parse(JSON.stringify(store.packs[0]));
+    buildBoard();
+  }else{
+    buildBoard();
+  }
   buildEditorGrid(5,5);
   refreshPlayers();
 })();
