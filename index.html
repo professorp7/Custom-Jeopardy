@@ -297,7 +297,7 @@ body.theme-arcade .board-wrap{
         <option value="fnaf-purple">Theme: FNaF Purple</option>
         <option value="arcade">Theme: Arcade Green</option>
       </select>
-      <span class="small">Tip: Buzzers A S D F / J K L ; or click ✋</span>
+      <span class="small">Tip: Use ← / → to hop between clues in a row</span>
     </div>
 
     <!-- PLAY TAB -->
@@ -420,31 +420,23 @@ body.theme-arcade .board-wrap{
         <div class="row center" style="justify-content:center;margin:8px 0">
           <button class="btn" id="btnReveal">Reveal Answer</button>
           <button class="btn warn" id="btnTimer">Start 10s Timer</button>
-          <button class="btn ghost" id="btnBuzz">✋ Open Buzzers</button>
         </div>
 
         <div id="answerWrap" class="center hidden" style="margin:8px 0 12px">
           <div id="mAnswer" style="font-size:26px"></div>
         </div>
 
-        <div id="buzzWrap" class="hidden">
-          <div class="alert center">
-            Buzz with keys: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> • <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>;</kbd> or click a ✋ on a player card.
-          </div>
-          <div id="buzzResult" class="center" style="margin:10px 0;font-size:22px"></div>
-        </div>
-
         <!-- Who is answering? -->
         <div id="answerControls" class="center" style="margin-top:10px">
-          <div class="small" style="margin-bottom:4px">Who is answering this clue?</div>
+          <div class="small" style="margin-bottom:4px">Who got this clue?</div>
           <select id="answerPlayerSelect" class="input" style="min-width:180px;max-width:260px">
-            <option value="">(Use buzzer winner or pick player)</option>
+            <option value="">(Pick the player who got it right or wrong)</option>
           </select>
         </div>
 
         <!-- Daily Double controls -->
         <div id="ddControls" class="center hidden" style="margin-top:12px">
-          <div class="small" style="margin-bottom:4px">Daily Double: choose a player and set a wager</div>
+          <div class="small" style="margin-bottom:4px">Daily Double: choose a player and set a wager (optional)</div>
           <div class="row center" style="justify-content:center">
             <select id="ddPlayerSelect" class="input" style="min-width:160px">
               <option value="">Select player</option>
@@ -471,7 +463,6 @@ body.theme-arcade .board-wrap{
         <ul>
           <li><kbd>R</kbd> reveal answer</li>
           <li><kbd>T</kbd> start/stop timer</li>
-          <li><kbd>B</kbd> open buzzers</li>
           <li><kbd>←/→</kbd> navigate unanswered clues in the current row</li>
           <li><kbd>Esc</kbd> close card</li>
         </ul>
@@ -523,7 +514,7 @@ const store = {
  **********************/
 let currentPack=null; // loaded pack
 let players=[]; // {id,name,score,key}
-let buzzOpen=false, buzzWinner=null, activeCell=null; // {c,r}
+let activeCell=null; // {c,r}
 let timerInt=null, timerLeft=0;
 let currentTheme='default';
 let ddState=null; // {playerId, wager}
@@ -619,16 +610,13 @@ function buildBoard(){
 
 function refreshPlayers(){
   const wrap = $('#players'); wrap.innerHTML='';
-  const keyMap=['A','S','D','F','J','K','L',';'];
-  players.forEach((p,i)=>{
+  players.forEach((p)=>{
     const card=document.createElement('div'); card.className='score';
     card.innerHTML=`
       <span class="p">${p.name}</span>
-      <span class="small">(${p.key || keyMap[i] || '✋'})</span>
       <span>•</span><b>${p.score}</b>
       <button class="btn small good" data-d="+100">+100</button>
       <button class="btn small bad" data-d="-100">-100</button>
-      <button class="btn small ghost" data-act="buzz">✋</button>
       <button class="btn small ghost" data-act="rm">✖</button>`;
     card.querySelectorAll('button').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -645,12 +633,6 @@ function refreshPlayers(){
           populateAnswerControls();
           return;
         }
-        if(act==='buzz'){
-          if(buzzOpen && !buzzWinner){
-            buzzWinner=p;
-            showBuzzWinner(p);
-          }
-        }
       });
     });
     wrap.appendChild(card);
@@ -666,7 +648,7 @@ function populateAnswerControls(){
   const ddSel = $('#ddPlayerSelect');
   if(ansSel){
     const current = ansSel.value;
-    ansSel.innerHTML='<option value="">(Use buzzer winner or pick player)</option>';
+    ansSel.innerHTML='<option value="">(Pick the player who got it right or wrong)</option>';
     players.forEach(p=>{
       const opt=document.createElement('option');
       opt.value=p.id;
@@ -693,8 +675,7 @@ function populateAnswerControls(){
  **********************/
 function openCard(c,r){
   activeCell={c,r};
-  buzzOpen=false; buzzWinner=null; ddState=null;
-  $('#buzzResult').textContent='';
+  ddState=null;
   stopTimer();
   const item=currentPack.grid[c][r];
   $('#mCategory').textContent=currentPack.categories[c]||`Cat ${c+1}`;
@@ -703,12 +684,11 @@ function openCard(c,r){
   $('#mQuestion').textContent=item.q||'(No question)';
   $('#mAnswer').textContent=item.a||'(No answer set)';
   $('#answerWrap').classList.add('hidden');
-  $('#buzzWrap').classList.add('hidden');
   $('#ddStatus').textContent = '';
   const ddControls=$('#ddControls');
   if(item.dd){
     ddControls.classList.remove('hidden');
-    $('#ddStatus').textContent='Choose a player and wager before scoring.';
+    $('#ddStatus').textContent='Optional: set a wager or just score with normal value.';
   }else{
     ddControls.classList.add('hidden');
   }
@@ -723,18 +703,7 @@ function closeCard(){
 function reveal(){
   $('#answerWrap').classList.remove('hidden');
 }
-function openBuzz(){
-  buzzOpen=true;
-  buzzWinner=null;
-  $('#buzzWrap').classList.remove('hidden');
-  $('#buzzResult').textContent='Buzzers open!';
-}
-function showBuzzWinner(p){
-  if(!p) return;
-  buzzWinner=p;
-  buzzOpen=false;
-  $('#buzzResult').textContent = `${p.name} buzzed in!`;
-}
+
 function applyResult(correct){
   if(!activeCell || !currentPack) return;
   const {c,r}=activeCell;
@@ -746,18 +715,13 @@ function applyResult(correct){
   // Which player?
   let targetPlayer = null;
 
-  // Daily Double overrides value + player if wager set
-  if(item.dd && ddState && ddState.wager>0){
+  // For Daily Double, if a wager + player was set, use that instead
+  if(item.dd && ddState && ddState.playerId && ddState.wager>0){
     baseVal = ddState.wager;
     targetPlayer = players.find(p=>p.id===ddState.playerId) || null;
   }
 
-  // If still no target, use buzz winner
-  if(!targetPlayer && buzzWinner){
-    targetPlayer = buzzWinner;
-  }
-
-  // If still no target, use manual selection
+  // If still no target, use the dropdown
   if(!targetPlayer){
     const sel = $('#answerPlayerSelect');
     const id = sel ? sel.value : '';
@@ -767,7 +731,7 @@ function applyResult(correct){
   }
 
   if(!targetPlayer){
-    toast('No player selected/buzzed. Pick a player or use buzzers first.');
+    toast('Pick which player got it right or wrong in the dropdown first.');
     return;
   }
 
@@ -1164,25 +1128,16 @@ $('#btnSetDDWager').addEventListener('click',()=>{
   $('#mValue').textContent='$'+w;
 });
 
-// Keyboard buzz + shortcuts
+// Keyboard shortcuts
 window.addEventListener('keydown',e=>{
   const keyRaw = e.key;
   const key = keyRaw.toLowerCase();
-  const mapping = ['a','s','d','f','j','k','l',';'];
-
-  if(buzzOpen && !buzzWinner){
-    const idx = mapping.indexOf(key);
-    if(idx>=0 && players[idx]){
-      showBuzzWinner(players[idx]);
-    }
-  }
 
   if($('#modalCard').classList.contains('show')){
     if(key==='r') reveal();
     if(key==='t'){
       if(timerInt) stopTimer(); else startTimer(10);
     }
-    if(key==='b') openBuzz();
     if(key==='escape') closeCard();
     if(keyRaw === 'ArrowLeft'){
       e.preventDefault();
@@ -1200,7 +1155,6 @@ $('#btnReveal').addEventListener('click',reveal);
 $('#btnTimer').addEventListener('click',()=>{
   if(timerInt) stopTimer(); else startTimer(10);
 });
-$('#btnBuzz').addEventListener('click',openBuzz);
 $('#btnCorrect').addEventListener('click',()=>applyResult(true));
 $('#btnWrong').addEventListener('click',()=>applyResult(false));
 $('#btnSkip').addEventListener('click',closeCard);
@@ -1308,7 +1262,7 @@ function seedSamples(){
   const fnaf = makeEmpty(5,5,'FNaF Night');
   fnaf.categories = ['Animatronics','Locations','Timeline','Mini-Games','Misc'];
 
-  // Sample questions (not super deep lore, just fun)
+  // Sample questions (simple, fun)
   fnaf.grid[0][0]={q:'The bear animatronic who hosts the original pizzeria.', a:'Freddy Fazbear', used:false, dd:false};
   fnaf.grid[0][1]={q:'The yellow rabbit suit used by William Afton.', a:'Spring Bonnie / Springtrap', used:false, dd:false};
   fnaf.grid[0][2]={q:'The fox pirate animatronic found in Pirate Cove.', a:'Foxy', used:false, dd:false};
@@ -1327,10 +1281,10 @@ function seedSamples(){
   fnaf.grid[2][3]={q:'The event where multiple kids were lured away and killed, often abbreviated MCI.', a:'The Missing Children Incident', used:false, dd:false};
   fnaf.grid[2][4]={q:'The name of William Afton’s son who becomes the crying child / victim in some theories.', a:'Commonly called the Crying Child (name debated)', used:false, dd:false};
 
-  fnaf.grid[3][0]={q:'The 8-bit minigames style first seen on Atari-like screens.', a:'Retro/Atari-style minigames', used:false, dd:false};
+  fnaf.grid[3][0]={q:'The 8-bit style minigames first seen on Atari-like screens.', a:'Retro/Atari-style minigames', used:false, dd:false};
   fnaf.grid[3][1]={q:'The minigame where you give cake to children as Freddy.', a:'Give Cake to the Children', used:false, dd:false};
-  fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'FNaF 2 “Save Them” style minigame (often called “Take Cake” / variants)', used:false, dd:false};
-  fnaf.grid[3][3]={q:'The minigame that reveals the spirits inside the toys, with balloons and gifts.', a:'Happiest Day', used:false, dd:false};
+  fnaf.grid[3][2]={q:'The minigame where you play as a purple man driving a car, crashing into kids.', a:'FNaF 2-style “Save Them”/car minigame', used:false, dd:false};
+  fnaf.grid[3][3]={q:'The minigame that shows spirits being put to rest with masks and a party.', a:'Happiest Day', used:false, dd:false};
   fnaf.grid[3][4]={q:'The minigame where you control a crying child in a house with a creepy Fredbear plush.', a:'FNaF 4 bedroom minigames', used:false, dd:false};
 
   fnaf.grid[4][0]={q:'The animatronic that crawls through vents in Sister Location.', a:'Funtime Foxy / Ennard (depending on section)', used:false, dd:false};
